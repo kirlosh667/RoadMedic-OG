@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#F2F2F2">
+
+    <!-- Top AppBar -->
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/topAppBar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="@color/rm_primary"
+        app:title="@string/saved_pothole_reports"
+        app:titleCentered="true"
+        app:titleTextColor="@android:color/white" />
+
+    <!-- Content -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <!-- Title -->
+        <TextView
+            android:id="@+id/tvTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/saved_pothole_reports"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            android:textColor="#212121"
+            android:layout_marginBottom="12dp" />
+
+        <!-- List -->
+        <ListView
+            android:id="@+id/listReports"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:divider="@android:color/transparent"
+            android:dividerHeight="10dp"
+            android:paddingBottom="8dp"/>
+
+        <!-- Buttons (Material style) -->
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnClearMy"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Clear My Reports"
+            android:layout_marginTop="10dp"
+            app:cornerRadius="20dp"/>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnMyReports"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="My Reports"
+            android:layout_marginTop="8dp"
+            app:cornerRadius="20dp"/>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnOtherReports"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Other Reports"
+            android:layout_marginTop="8dp"
+            app:cornerRadius="20dp"/>
+
+    </LinearLayout>
+
+</LinearLayout>

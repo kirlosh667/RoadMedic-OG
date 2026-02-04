@@ -1,0 +1,24 @@
+<resources>
+
+    <!-- Main App Theme -->
+    <style name="Theme.RoadMedic" parent="Theme.Material3.DayNight.NoActionBar">
+
+        <item name="colorPrimary">@color/rm_primary</item>
+        <item name="colorPrimaryVariant">@color/rm_primary_dark</item>
+        <item name="colorOnPrimary">@color/rm_on_primary</item>
+
+        <item name="colorSecondary">@color/rm_secondary</item>
+        <item name="colorOnSecondary">@android:color/white</item>
+
+        <item name="android:statusBarColor">@color/rm_primary_dark</item>
+
+    </style>
+
+    <!-- ✅ SPLASH THEME -->
+    <style name="Theme.RoadMedic.Splash" parent="Theme.Material3.DayNight.NoActionBar">
+
+        <item name="android:windowBackground">@color/rm_primary</item>
+
+    </style>
+
+</resources>

@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:osmdroid="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <org.osmdroid.views.MapView
+        android:id="@+id/map"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
+
+    <!-- TOP SEARCH PANEL -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="#AAFFFFFF"
+        android:padding="8dp"
+        android:layout_alignParentTop="true">
+
+        <!-- FROM -->
+        <EditText
+            android:id="@+id/etFrom"
+            android:hint="From (type 'my' for My Location)"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="#000000"
+            android:textColorHint="#666666"/>
+
+        <!-- TO -->
+        <EditText
+            android:id="@+id/etTo"
+            android:hint="To location"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="#000000"
+            android:textColorHint="#666666"/>
+
+        <Button
+            android:id="@+id/btnRoute"
+            android:text="Show Route"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
+    </LinearLayout>
+
+</RelativeLayout>

@@ -1,0 +1,15 @@
+<resources>
+
+    <color name="rm_primary">#1565C0</color>
+    <color name="rm_primary_dark">#0D47A1</color>
+    <color name="rm_secondary">#00C853</color>
+
+    <color name="rm_background">#FAFAFA</color>
+    <color name="rm_card">#FFFFFF</color>
+
+    <color name="rm_text_main">#111111</color>
+    <color name="rm_text_sub">#555555</color>
+
+    <color name="rm_on_primary">#FFFFFF</color>
+
+</resources>

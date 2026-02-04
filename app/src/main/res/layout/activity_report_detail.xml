@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#F5F5F5">
+
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/topAppBar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:backgroundTint="#1565C0"
+        app:title="Pothole Report Detail"
+        app:titleTextColor="@android:color/white"/>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <ImageView
+                android:id="@+id/imgDetail"
+                android:layout_width="match_parent"
+                android:layout_height="250dp"
+                android:scaleType="centerCrop"
+                android:background="#DDDDDD"/>
+
+            <TextView
+                android:id="@+id/tvDetailTime"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Time"
+                android:textSize="16sp"
+                android:textColor="#000000"
+                android:layout_marginTop="16dp"/>
+
+            <TextView
+                android:id="@+id/tvDetailLocation"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Location"
+                android:textSize="16sp"
+                android:textColor="#000000"
+                android:layout_marginTop="8dp"/>
+
+            <TextView
+                android:id="@+id/tvDetailPath"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Path"
+                android:textSize="14sp"
+                android:textColor="#666666"
+                android:layout_marginTop="8dp"/>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnOpenInMaps"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Open in Maps"
+                android:layout_marginTop="20dp"/>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnShareReport"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Share Report"
+                android:layout_marginTop="10dp"/>
+
+        </LinearLayout>
+
+    </ScrollView>
+
+</LinearLayout>

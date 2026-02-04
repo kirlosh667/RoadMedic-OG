@@ -1,0 +1,79 @@
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:gravity="center_horizontal"
+        android:padding="24dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <!-- LOGO -->
+
+        <!-- TITLE -->
+
+        <ImageView
+            android:layout_width="249dp"
+            android:layout_height="184dp"
+            android:layout_marginTop="40dp"
+            android:layout_marginBottom="20dp"
+            android:src="@drawable/logo" />
+
+        <TextView
+            android:text="RoadMedic Login"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            android:textColor="#1976D2"
+            android:layout_marginBottom="24dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+
+        <!-- USER / ADMIN SELECT -->
+        <RadioGroup
+            android:id="@+id/rgRole"
+            android:orientation="horizontal"
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="20dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+
+            <RadioButton
+                android:id="@+id/rbUser"
+                android:text="User"
+                android:checked="true"
+                android:layout_marginEnd="20dp"/>
+
+            <RadioButton
+                android:id="@+id/rbAdmin"
+                android:text="Admin"/>
+        </RadioGroup>
+
+        <!-- USERNAME -->
+        <EditText
+            android:id="@+id/etUsername"
+            android:hint="Username"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp"/>
+
+        <!-- PASSWORD -->
+        <EditText
+            android:id="@+id/etPassword"
+            android:hint="Password"
+            android:inputType="textPassword"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="20dp"/>
+
+        <!-- LOGIN BUTTON -->
+        <Button
+            android:id="@+id/btnLogin"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="30dp"
+            android:text="Login" />
+
+    </LinearLayout>
+
+</ScrollView>

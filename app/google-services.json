@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "535953445456",
+    "project_id": "roadmedic-4c3a1",
+    "storage_bucket": "roadmedic-4c3a1.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:535953445456:android:17c30e6400c83a0354f755",
+        "android_client_info": {
+          "package_name": "com.example.roadmedic"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDdKGOczMMt73cs3RtOEsRblh4NsGtumLc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
