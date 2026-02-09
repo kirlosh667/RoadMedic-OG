@@ -8,6 +8,7 @@ import android.os.Bundle
 import android.view.MenuItem
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
+import com.bumptech.glide.Glide
 import com.google.android.material.appbar.MaterialToolbar
 import java.io.File
 import java.text.SimpleDateFormat
@@ -33,7 +34,8 @@ class ReportDetailActivity : AppCompatActivity() {
 
         // Intent data
         val timestampStr = intent.getStringExtra("timestamp")
-        val imagePath = intent.getStringExtra("imagePath")
+        val imagePath = intent.getStringExtra("imagePath")   // old local
+        val imageUrl = intent.getStringExtra("imageUrl")     // new cloudinary
         val latStr = intent.getStringExtra("lat")
         val lonStr = intent.getStringExtra("lon")
 
@@ -53,40 +55,39 @@ class ReportDetailActivity : AppCompatActivity() {
         val lat = latStr.toDouble()
         val lon = lonStr.toDouble()
 
-        // ⭐ IMAGE DEBUG + LOAD
-        Toast.makeText(this, "Path: $imagePath", Toast.LENGTH_LONG).show()
+        // ⭐ IMAGE LOADING (Cloudinary + Local fallback)
 
-        if (!imagePath.isNullOrEmpty()) {
+        when {
+            // ✅ Cloudinary URL
+            !imageUrl.isNullOrEmpty() -> {
+                Glide.with(this)
+                    .load(imageUrl)
+                    .placeholder(android.R.drawable.ic_menu_gallery)
+                    .error(android.R.drawable.ic_menu_report_image)
+                    .into(imgDetail)
+            }
 
-            val file = File(imagePath)
+            // ✅ Old local file support
+            !imagePath.isNullOrEmpty() -> {
+                val file = File(imagePath)
 
-            if (file.exists()) {
-                imgDetail.setImageBitmap(
-                    BitmapFactory.decodeFile(file.absolutePath)
-                )
-            } else {
-                Toast.makeText(
-                    this,
-                    "Image file not found",
-                    Toast.LENGTH_SHORT
-                ).show()
+                if (file.exists()) {
+                    imgDetail.setImageBitmap(
+                        BitmapFactory.decodeFile(file.absolutePath)
+                    )
+                } else {
+                    imgDetail.setImageResource(
+                        android.R.drawable.ic_menu_report_image
+                    )
+                }
+            }
 
+            // ❌ No image
+            else -> {
                 imgDetail.setImageResource(
                     android.R.drawable.ic_menu_report_image
                 )
             }
-
-        } else {
-
-            Toast.makeText(
-                this,
-                "No image path",
-                Toast.LENGTH_SHORT
-            ).show()
-
-            imgDetail.setImageResource(
-                android.R.drawable.ic_menu_report_image
-            )
         }
 
         // ADDRESS

@@ -17,7 +17,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
-        <!-- DARK TEXT -->
         <TextView
             android:id="@+id/txtItem"
             android:layout_width="match_parent"
@@ -34,7 +33,9 @@
             android:layout_marginTop="10dp"
             app:cornerRadius="20dp"
             app:backgroundTint="#E53935"
-            android:textColor="@android:color/white"/>
+            android:textColor="@android:color/white"
+            android:focusable="false"
+            android:focusableInTouchMode="false"/>
 
     </LinearLayout>
 

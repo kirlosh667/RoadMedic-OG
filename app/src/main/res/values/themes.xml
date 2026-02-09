@@ -14,10 +14,20 @@
 
     </style>
 
-    <!-- ✅ SPLASH THEME -->
+    <!-- Splash Theme -->
     <style name="Theme.RoadMedic.Splash" parent="Theme.Material3.DayNight.NoActionBar">
-
         <item name="android:windowBackground">@color/rm_primary</item>
+    </style>
+
+
+    <!-- ✅ PREMIUM DIALOG STYLE -->
+    <style name="PremiumDialog" parent="Theme.Material3.Light.Dialog.Alert">
+
+        <!-- Makes custom background visible -->
+        <item name="android:windowBackground">@android:color/transparent</item>
+
+        <!-- Black title & text -->
+        <item name="android:textColorPrimary">#000000</item>
 
     </style>
 

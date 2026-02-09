@@ -1,12 +1,17 @@
 package com.example.roadmedic
 
-import android.graphics.BitmapFactory
+import android.app.AlertDialog
+import android.content.Intent
 import android.location.Geocoder
 import android.location.Location
+import android.net.Uri
 import android.os.Bundle
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import com.bumptech.glide.Glide
+import com.bumptech.glide.request.target.CustomTarget
+import com.bumptech.glide.request.transition.Transition
 import com.google.firebase.firestore.FirebaseFirestore
 import org.osmdroid.bonuspack.routing.OSRMRoadManager
 import org.osmdroid.bonuspack.routing.RoadManager
@@ -18,7 +23,6 @@ import org.osmdroid.views.overlay.Polyline
 import org.osmdroid.views.overlay.infowindow.InfoWindow
 import org.osmdroid.views.overlay.mylocation.GpsMyLocationProvider
 import org.osmdroid.views.overlay.mylocation.MyLocationNewOverlay
-import java.io.File
 import java.util.*
 
 class MapActivity : AppCompatActivity() {
@@ -35,13 +39,10 @@ class MapActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // ⭐ OSMDroid setup
         Configuration.getInstance().load(
             applicationContext,
             getSharedPreferences("osm", MODE_PRIVATE)
         )
-
-        // ⭐ REQUIRED — prevents crash
         Configuration.getInstance().userAgentValue = packageName
 
         setContentView(R.layout.activity_map)
@@ -49,18 +50,22 @@ class MapActivity : AppCompatActivity() {
         map = findViewById(R.id.map)
         map.setMultiTouchControls(true)
 
+        // Close popup on map tap
+        map.setOnTouchListener { _, _ ->
+            InfoWindow.closeAllInfoWindowsOn(map)
+            false
+        }
+
         etFrom = findViewById(R.id.etFrom)
         etTo = findViewById(R.id.etTo)
         btnRoute = findViewById(R.id.btnRoute)
 
-        // ⭐ My Location
         myLocationOverlay =
             MyLocationNewOverlay(GpsMyLocationProvider(this), map)
 
         myLocationOverlay.enableMyLocation()
         map.overlays.add(myLocationOverlay)
 
-        // Wait for GPS fix
         myLocationOverlay.runOnFirstFix {
             runOnUiThread { loadPotholes() }
         }
@@ -82,55 +87,85 @@ class MapActivity : AppCompatActivity() {
                     val lat = doc.getDouble("latitude") ?: continue
                     val lon = doc.getDouble("longitude") ?: continue
                     val severity = (doc.getLong("severity") ?: 1).toInt()
-                    val imagePath = doc.getString("imagePath")
+                    val imageUrl = doc.getString("imageUrl")
 
                     val marker = Marker(map)
                     marker.position = GeoPoint(lat, lon)
 
-                    // 🎨 Severity icons
                     marker.icon = when (severity) {
                         1 -> ContextCompat.getDrawable(this, R.drawable.ic_pothole_low)
                         2 -> ContextCompat.getDrawable(this, R.drawable.ic_pothole_medium)
                         else -> ContextCompat.getDrawable(this, R.drawable.ic_pothole_high)
                     }
 
-                    // ⭐ Custom popup with photo
+                    // INFO WINDOW
                     marker.infoWindow =
                         object : InfoWindow(R.layout.marker_info_window, map) {
 
                             override fun onOpen(item: Any?) {
 
-                                val img =
-                                    mView.findViewById<ImageView>(R.id.infoImage)
-                                val title =
-                                    mView.findViewById<TextView>(R.id.infoTitle)
-                                val address =
-                                    mView.findViewById<TextView>(R.id.infoAddress)
+                                val img = mView.findViewById<ImageView>(R.id.infoImage)
+                                val title = mView.findViewById<TextView>(R.id.infoTitle)
+                                val badge = mView.findViewById<TextView>(R.id.infoSeverityBadge)
+                                val reporter = mView.findViewById<TextView>(R.id.infoReporter)
+                                val address = mView.findViewById<TextView>(R.id.infoAddress)
 
-                                title.text = when (severity) {
-                                    1 -> "🟡 LOW pothole"
-                                    2 -> "🟠 MEDIUM pothole"
-                                    else -> "🔴 HIGH pothole"
+                                // Severity UI
+                                when (severity) {
+                                    1 -> {
+                                        title.text = "Low pothole"
+                                        badge.text = "LOW"
+                                        badge.setBackgroundColor(0xFFFFC107.toInt())
+                                    }
+                                    2 -> {
+                                        title.text = "Medium pothole"
+                                        badge.text = "MEDIUM"
+                                        badge.setBackgroundColor(0xFFFF9800.toInt())
+                                    }
+                                    else -> {
+                                        title.text = "High pothole"
+                                        badge.text = "HIGH"
+                                        badge.setBackgroundColor(0xFFE53935.toInt())
+                                    }
                                 }
 
-                                address.text =
-                                    doc.getString("address") ?: "Unknown"
+                                reporter.text =
+                                    "Reported by: ${doc.getString("userId") ?: "Unknown"}"
 
-                                // 📸 Load photo
-                                if (!imagePath.isNullOrEmpty()) {
-                                    val file = File(imagePath)
-                                    if (file.exists()) {
-                                        img.setImageBitmap(
-                                            BitmapFactory.decodeFile(file.absolutePath)
-                                        )
-                                    } else {
-                                        img.setImageResource(
-                                            android.R.drawable.ic_menu_report_image
-                                        )
-                                    }
+                                address.text =
+                                    doc.getString("address") ?: "Unknown location"
+
+                                // Image load
+                                if (!imageUrl.isNullOrEmpty()) {
+                                    Glide.with(img)
+                                        .asBitmap()
+                                        .load(imageUrl)
+                                        .into(object :
+                                            CustomTarget<android.graphics.Bitmap>() {
+
+                                            override fun onResourceReady(
+                                                resource: android.graphics.Bitmap,
+                                                transition: Transition<in android.graphics.Bitmap>?
+                                            ) {
+                                                img.setImageBitmap(resource)
+                                            }
+
+                                            override fun onLoadCleared(
+                                                placeholder: android.graphics.drawable.Drawable?
+                                            ) {}
+                                        })
                                 } else {
                                     img.setImageResource(
                                         android.R.drawable.ic_menu_report_image
+                                    )
+                                }
+
+                                // ⭐ CLICK ON POPUP -> ACTIONS
+                                mView.setOnClickListener {
+                                    showActionDialog(
+                                        lat,
+                                        lon,
+                                        address.text.toString()
                                     )
                                 }
                             }
@@ -138,18 +173,18 @@ class MapActivity : AppCompatActivity() {
                             override fun onClose() {}
                         }
 
+                    // Click behavior
                     marker.setOnMarkerClickListener { m, _ ->
+                        InfoWindow.closeAllInfoWindowsOn(map)
                         m.showInfoWindow()
                         true
                     }
 
                     map.overlays.add(marker)
 
-                    // 📏 Distance calculation
+                    // Nearest pothole calc
                     if (myLoc != null) {
-
                         val res = FloatArray(1)
-
                         Location.distanceBetween(
                             myLoc.latitude,
                             myLoc.longitude,
@@ -163,7 +198,6 @@ class MapActivity : AppCompatActivity() {
                     }
                 }
 
-                // ⭐ Show nearest pothole
                 if (nearest != Float.MAX_VALUE) {
                     Toast.makeText(
                         this,
@@ -172,16 +206,56 @@ class MapActivity : AppCompatActivity() {
                     ).show()
                 }
 
-                // ⭐ Zoom to user
-                if (myLoc != null) {
+                myLoc?.let {
                     map.controller.animateTo(
-                        GeoPoint(myLoc.latitude, myLoc.longitude)
+                        GeoPoint(it.latitude, it.longitude)
                     )
                     map.controller.setZoom(16.0)
                 }
 
                 map.invalidate()
             }
+    }
+
+    // ⭐ ACTION DIALOG
+// ⭐ ACTION DIALOG (PRO UI)
+    private fun showActionDialog(lat: Double, lon: Double, address: String) {
+
+        val options = arrayOf(
+            "Open in Google Maps",
+            "Share location"
+        )
+
+        val dialog = AlertDialog.Builder(this, R.style.PremiumDialog)
+            .setTitle("Choose action")
+            .setItems(options) { _, which ->
+
+                when (which) {
+
+                    // Open in Maps
+                    0 -> {
+                        val uri = Uri.parse("geo:$lat,$lon?q=$lat,$lon(Pothole)")
+                        startActivity(Intent(Intent.ACTION_VIEW, uri))
+                    }
+
+                    // Share
+                    1 -> {
+                        val shareText =
+                            "Pothole reported at:\n$address\nhttps://maps.google.com/?q=$lat,$lon"
+
+                        val intent = Intent(Intent.ACTION_SEND)
+                        intent.type = "text/plain"
+                        intent.putExtra(Intent.EXTRA_TEXT, shareText)
+                        startActivity(Intent.createChooser(intent, "Share via"))
+                    }
+                }
+            }
+            .create()
+
+        dialog.show()
+
+        // ⭐ Rounded background + border
+        dialog.window?.setBackgroundDrawableResource(R.drawable.dialog_bg)
     }
 
     // ---------------- ROUTING ----------------
@@ -195,7 +269,6 @@ class MapActivity : AppCompatActivity() {
             return
         }
 
-        // Remove old routes
         map.overlays.removeAll { it is Polyline }
 
         val roadManager = OSRMRoadManager(this, "RoadMedic")
@@ -237,6 +310,8 @@ class MapActivity : AppCompatActivity() {
                 GeoPoint(addr[0].latitude, addr[0].longitude)
             else null
 
-        } catch (e: Exception) { null }
+        } catch (e: Exception) {
+            null
+        }
     }
 }

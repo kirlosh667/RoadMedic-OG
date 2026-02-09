@@ -14,11 +14,17 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.Priority
+import com.google.android.gms.tasks.CancellationTokenSource
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.firebase.firestore.FirebaseFirestore
-import java.io.File
-import java.io.FileOutputStream
 import java.util.*
+import okhttp3.*
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.RequestBody.Companion.toRequestBody
+import org.json.JSONObject
+import java.io.ByteArrayOutputStream
+import java.io.IOException
 
 class ReportPotholeActivity : AppCompatActivity() {
 
@@ -34,7 +40,7 @@ class ReportPotholeActivity : AppCompatActivity() {
         LocationServices.getFusedLocationProviderClient(this)
     }
 
-    // CAMERA
+    // 📸 CAMERA
     private val cameraLauncher =
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == Activity.RESULT_OK) {
@@ -94,15 +100,28 @@ class ReportPotholeActivity : AppCompatActivity() {
         cameraLauncher.launch(Intent(MediaStore.ACTION_IMAGE_CAPTURE))
     }
 
+    // 📍 FIXED LOCATION FUNCTION
     private fun getLocation() {
+
+        if (ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            requestLocationPermission.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+            return
+        }
+
+        val cts = CancellationTokenSource()
+
         fusedLocationClient.getCurrentLocation(
-            com.google.android.gms.location.Priority.PRIORITY_HIGH_ACCURACY,
-            null
+            Priority.PRIORITY_HIGH_ACCURACY,
+            cts.token
         ).addOnSuccessListener { loc ->
+
             if (loc != null) {
                 lastLat = loc.latitude
                 lastLon = loc.longitude
-                txtLocationOutput.text = "Location: $lastLat, $lastLon"
                 fetchAddress(lastLat!!, lastLon!!)
             } else {
                 Toast.makeText(this, "Turn ON GPS", Toast.LENGTH_LONG).show()
@@ -110,6 +129,7 @@ class ReportPotholeActivity : AppCompatActivity() {
         }
     }
 
+    // 🌍 ADDRESS FETCH
     private fun fetchAddress(lat: Double, lon: Double) {
         Thread {
             try {
@@ -126,7 +146,7 @@ class ReportPotholeActivity : AppCompatActivity() {
         }.start()
     }
 
-    // SAVE REPORT
+    // 💾 SAVE REPORT
     private fun saveReport() {
 
         val bitmap = latestBitmap ?: run {
@@ -141,14 +161,6 @@ class ReportPotholeActivity : AppCompatActivity() {
 
         val lon = lastLon!!
 
-        val timestamp = System.currentTimeMillis()
-
-        // ⭐ SAVE IMAGE FILE
-        val file = File(filesDir, "pothole_$timestamp.jpg")
-        FileOutputStream(file).use {
-            bitmap.compress(Bitmap.CompressFormat.JPEG, 90, it)
-        }
-
         val severity = when (findViewById<RadioGroup>(R.id.rgSeverity).checkedRadioButtonId) {
             R.id.rbMedium -> 2
             R.id.rbHigh -> 3
@@ -159,26 +171,61 @@ class ReportPotholeActivity : AppCompatActivity() {
             getSharedPreferences("session", MODE_PRIVATE)
                 .getString("username", "guest") ?: "guest"
 
-        // ⭐ FIX HERE — SAVE imagePath
-        val data = hashMapOf(
-            "timestamp" to timestamp,
-            "latitude" to lat,
-            "longitude" to lon,
-            "severity" to severity,
-            "address" to lastAddress,
-            "userId" to username,
-            "imagePath" to file.absolutePath   // ⭐ IMPORTANT LINE
-        )
+        val timestamp = System.currentTimeMillis()
 
-        FirebaseFirestore.getInstance()
-            .collection("potholes")
-            .add(data)
-            .addOnSuccessListener {
-                Toast.makeText(this, "✅ Uploaded!", Toast.LENGTH_LONG).show()
-                finish()
+        val stream = ByteArrayOutputStream()
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 80, stream)
+        val bytes = stream.toByteArray()
+
+        // ☁️ Cloudinary Upload
+        val requestBody = MultipartBody.Builder()
+            .setType(MultipartBody.FORM)
+            .addFormDataPart(
+                "file",
+                "pothole.jpg",
+                bytes.toRequestBody("image/*".toMediaTypeOrNull())
+            )
+            .addFormDataPart("upload_preset", "pothole_upload")
+            .build()
+
+        val request = Request.Builder()
+            .url("https://api.cloudinary.com/v1_1/dq6xqtia1/image/upload")
+            .post(requestBody)
+            .build()
+
+        OkHttpClient().newCall(request).enqueue(object : Callback {
+
+            override fun onFailure(call: Call, e: IOException) {
+                runOnUiThread {
+                    Toast.makeText(this@ReportPotholeActivity, "Upload Failed", Toast.LENGTH_LONG).show()
+                }
             }
-            .addOnFailureListener {
-                Toast.makeText(this, "❌ Upload failed", Toast.LENGTH_LONG).show()
+
+            override fun onResponse(call: Call, response: Response) {
+
+                val json = JSONObject(response.body!!.string())
+                val imageUrl = json.getString("secure_url")
+
+                val data = hashMapOf(
+                    "timestamp" to timestamp,
+                    "latitude" to lat,
+                    "longitude" to lon,
+                    "severity" to severity,
+                    "address" to lastAddress,
+                    "userId" to username,
+                    "imageUrl" to imageUrl
+                )
+
+                FirebaseFirestore.getInstance()
+                    .collection("potholes")
+                    .add(data)
+                    .addOnSuccessListener {
+                        runOnUiThread {
+                            Toast.makeText(this@ReportPotholeActivity, "✅ Uploaded!", Toast.LENGTH_LONG).show()
+                            finish()
+                        }
+                    }
             }
+        })
     }
 }

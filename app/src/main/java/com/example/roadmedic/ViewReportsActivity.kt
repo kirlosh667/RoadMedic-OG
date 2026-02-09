@@ -70,7 +70,6 @@ class ViewReportsActivity : AppCompatActivity() {
 
             for (doc in result) {
 
-                // ⭐ SAFE FIX HERE
                 val data = HashMap(doc.data)
 
                 rawData.add(data)
@@ -85,8 +84,10 @@ class ViewReportsActivity : AppCompatActivity() {
                     android.text.format.DateFormat
                         .format("yyyy-MM-dd HH:mm", time)
 
+                // ⭐ SHOW USERNAME HERE
                 displayList.add(
-                    "Time: $timeString\n" +
+                    "👤 Reported by: ${data["userId"]}\n" +
+                            "Time: $timeString\n" +
                             "Severity: ${data["severity"]}\n" +
                             "Lat: ${data["latitude"]}, Lon: ${data["longitude"]}\n" +
                             "${data["address"] ?: ""}"
@@ -188,8 +189,7 @@ class ViewReportsActivity : AppCompatActivity() {
 
     private fun openDetail(data: HashMap<String, Any>) {
 
-        val intent =
-            Intent(this, ReportDetailActivity::class.java)
+        val intent = Intent(this, ReportDetailActivity::class.java)
 
         intent.putExtra(
             "timestamp",
@@ -204,6 +204,17 @@ class ViewReportsActivity : AppCompatActivity() {
         intent.putExtra(
             "lon",
             data["longitude"].toString()
+        )
+
+        // ⭐ PASS USERNAME TO DETAIL PAGE
+        intent.putExtra(
+            "userId",
+            data["userId"]?.toString() ?: "Unknown"
+        )
+
+        intent.putExtra(
+            "imageUrl",
+            data["imageUrl"]?.toString() ?: ""
         )
 
         intent.putExtra(
